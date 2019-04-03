@@ -15,8 +15,6 @@ import scala.language.postfixOps
 import scala.util.Try
 
 class GetApisHandler(apiGatewayClient: ApiGatewayClient, limit: Int = 500) extends ProxiedRequestHandler {
-  val InitialPosition: String = ""
-
   def this() {
     this(awsApiGatewayClient)
   }
@@ -25,18 +23,25 @@ class GetApisHandler(apiGatewayClient: ApiGatewayClient, limit: Int = 500) exten
     Try {
       new APIGatewayProxyResponseEvent()
         .withStatusCode(HTTP_OK)
-        .withBody(toJson(GetApisResponse(getApis(Seq.empty, InitialPosition))))
+        .withBody(toJson(GetApisResponse(getApis(Seq.empty, None))))
     } recover recovery get
   }
 
   @tailrec
-  private def getApis(apis: Seq[Api], position: String): Seq[Api] = {
-    val response: GetRestApisResponse = apiGatewayClient.getRestApis(GetRestApisRequest.builder().limit(limit).position(position).build())
+  private def getApis(apis: Seq[Api], position: Option[String]): Seq[Api] = {
+    val response: GetRestApisResponse = apiGatewayClient.getRestApis(buildRequest(position))
     val moreApis: Seq[Api] = response.items().asScala.map(item => Api(item.id(), item.name()))
     if (moreApis.size < limit) {
       apis ++ moreApis
     } else {
-      getApis(apis ++ moreApis, response.position())
+      getApis(apis ++ moreApis, Some(response.position()))
+    }
+  }
+
+  private def buildRequest(position: Option[String]): GetRestApisRequest = {
+    position match {
+      case Some(p) => GetRestApisRequest.builder().limit(limit).position(p).build()
+      case None => GetRestApisRequest.builder().limit(limit).build()
     }
   }
 }
