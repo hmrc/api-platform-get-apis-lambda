@@ -6,13 +6,11 @@ import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent
 import software.amazon.awssdk.services.apigateway.ApiGatewayClient
 import software.amazon.awssdk.services.apigateway.model._
 import uk.gov.hmrc.api_platform_manage_api.AwsApiGatewayClient.awsApiGatewayClient
-import uk.gov.hmrc.api_platform_manage_api.ErrorRecovery.recovery
 import uk.gov.hmrc.aws_gateway_proxied_request_lambda.ProxiedRequestHandler
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
-import scala.util.Try
 
 class GetApisHandler(apiGatewayClient: ApiGatewayClient, limit: Int = 500) extends ProxiedRequestHandler {
   def this() {
@@ -20,18 +18,16 @@ class GetApisHandler(apiGatewayClient: ApiGatewayClient, limit: Int = 500) exten
   }
 
   override def handleInput(input: APIGatewayProxyRequestEvent): APIGatewayProxyResponseEvent = {
-    Try {
-      new APIGatewayProxyResponseEvent()
-        .withStatusCode(HTTP_OK)
-        .withBody(toJson(GetApisResponse(getApis(Seq.empty, None))))
-    } recover recovery get
+    new APIGatewayProxyResponseEvent()
+      .withStatusCode(HTTP_OK)
+      .withBody(toJson(GetApisResponse(getApis(Seq.empty, None))))
   }
 
   @tailrec
   private def getApis(apis: Seq[Api], position: Option[String]): Seq[Api] = {
     val response: GetRestApisResponse = apiGatewayClient.getRestApis(buildRequest(position))
     val moreApis: Seq[Api] = response.items().asScala.map(item => Api(item.id(), item.name()))
-    if (moreApis.size < limit) {
+    if (response.position == null) {
       apis ++ moreApis
     } else {
       getApis(apis ++ moreApis, Some(response.position()))
