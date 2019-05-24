@@ -1,6 +1,6 @@
 package uk.gov.hmrc.apiplatform.getapis
 
-import java.net.HttpURLConnection.{HTTP_OK, HTTP_UNAUTHORIZED}
+import java.net.HttpURLConnection.HTTP_OK
 import java.util.UUID
 
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
@@ -35,13 +35,12 @@ class GetApisHandlerSpec extends WordSpecLike with Matchers with MockitoSugar {
     "retrieve the APIs in multiple requests if the number of APIs exceeds the limit per request" in new Setup {
       val apiGatewayFirstResponse: GetRestApisResponse = GetRestApisResponse.builder().items(
         RestApi.builder().id("1").name("API 1").build()
-      ).build()
+      ).position(UUID.randomUUID().toString).build()
       val apiGatewaySecondResponse: GetRestApisResponse = GetRestApisResponse.builder().items(
         RestApi.builder().id("2").name("API 2").build()
       ).build()
-      val apiGatewayThirdResponse: GetRestApisResponse = GetRestApisResponse.builder().build()
       when(mockAPIGatewayClient.getRestApis(any[GetRestApisRequest]))
-        .thenReturn(apiGatewayFirstResponse, apiGatewaySecondResponse, apiGatewayThirdResponse)
+        .thenReturn(apiGatewayFirstResponse, apiGatewaySecondResponse)
 
       val response: APIGatewayProxyResponseEvent = new GetApisHandler(mockAPIGatewayClient, limit = 1).handleInput(new APIGatewayProxyRequestEvent())
 
@@ -49,15 +48,13 @@ class GetApisHandlerSpec extends WordSpecLike with Matchers with MockitoSugar {
       response.getBody shouldEqual """{"restApis":[{"id":"1","name":"API 1"},{"id":"2","name":"API 2"}]}"""
     }
 
-    "correctly handle UnauthorizedException thrown by AWS SDK when retrieving APIs" in new Setup {
+    "propagate UnauthorizedException thrown by AWS SDK when retrieving APIs" in new Setup {
       val errorMessage = "You're not authorized"
       val id: String = UUID.randomUUID().toString
       when(mockAPIGatewayClient.getRestApis(any[GetRestApisRequest])).thenThrow(UnauthorizedException.builder().message(errorMessage).build())
 
-      val response: APIGatewayProxyResponseEvent = getApisHandler.handleInput(new APIGatewayProxyRequestEvent())
-
-      response.getStatusCode shouldEqual HTTP_UNAUTHORIZED
-      response.getBody shouldEqual errorMessage
+      val exception: UnauthorizedException = intercept[UnauthorizedException](getApisHandler.handleInput(new APIGatewayProxyRequestEvent()))
+      exception.getMessage shouldEqual errorMessage
     }
   }
 }
