@@ -2,8 +2,8 @@ lazy val appName = "api-platform-get-apis-lambda"
 lazy val appDependencies: Seq[ModuleID] = compileDependencies ++ testDependencies
 
 lazy val compileDependencies = Seq(
-  "uk.gov.hmrc" %% "aws-gateway-proxied-request-lambda" % "0.2.0",
-  "uk.gov.hmrc" %% "api-platform-manage-api" % "0.26.0"
+  "uk.gov.hmrc" %% "aws-gateway-proxied-request-lambda" % "0.8.0",
+  "uk.gov.hmrc" %% "api-platform-manage-api" % "0.42.0"
 )
 
 lazy val testScope: String = "test"
@@ -19,7 +19,7 @@ lazy val lambda = (project in file("."))
   .enablePlugins(plugins: _*)
   .settings(
     name := appName,
-    scalaVersion := "2.11.11",
+    scalaVersion := "2.12.10",
     libraryDependencies ++= appDependencies,
     parallelExecution in Test := false,
     fork in Test := false,
