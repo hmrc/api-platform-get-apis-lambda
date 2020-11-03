@@ -3,7 +3,7 @@ lazy val appDependencies: Seq[ModuleID] = compileDependencies ++ testDependencie
 
 lazy val compileDependencies = Seq(
   "uk.gov.hmrc" %% "aws-gateway-proxied-request-lambda" % "0.8.0",
-  "uk.gov.hmrc" %% "api-platform-manage-api" % "0.42.0"
+  "uk.gov.hmrc" %% "api-platform-manage-api" % "0.44.0"
 )
 
 lazy val testScope: String = "test"
