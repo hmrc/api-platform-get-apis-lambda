@@ -44,6 +44,26 @@ pipeline {
             }
             steps {
                 sh(script: "sbt test")
+                sh("echo ${env.BRANCH_NAME}")
+            }
+        }
+        stage('test skipping steps v1') {
+            steps {
+                script{
+                    if (env.BRANCH_NAME == 'main') {
+                        echo 'branch is main'
+                    } else if (env.BRANCH_NAME != 'someBranch') {
+                        echo 'branch is not called someBranch'
+                    }
+                }
+            }
+        }
+        stage('test skipping steps v2') {
+            when {
+              branch 'main'
+            }
+            steps {
+              echo 'still on branch main'
             }
         }
         stage('Generate sha256') {
