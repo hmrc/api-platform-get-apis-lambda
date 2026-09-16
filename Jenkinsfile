@@ -44,7 +44,15 @@ pipeline {
             }
             steps {
                 sh(script: "sbt test")
-                sh("echo ${env.BRANCH_NAME}")
+                sh("echo ${env.GIT_BRANCH}")
+                script {
+                    def gitbranch = sh(
+                        script: 'git rev-parse --abbrev-ref HEAD',
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Branch: ${gitbranch}"
+                }
             }
         }
         stage('test skipping steps v1') {
