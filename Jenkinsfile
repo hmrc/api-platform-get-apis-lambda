@@ -36,8 +36,14 @@ pipeline {
             }
         }
         stage('Run tests') {
+            agent {
+                dockerfile {
+                    // Cache sbt dependencies
+                    args "-v /tmp/.sbt:/root/.sbt -u root:root"
+                }
+            }
             steps {
-                sh("sbt clean compile test coverageOff")
+                sh(script: "sbt test")
             }
         }
         stage('Generate sha256') {
