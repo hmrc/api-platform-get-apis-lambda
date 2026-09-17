@@ -44,36 +44,16 @@ pipeline {
             }
             steps {
                 sh(script: "sbt test")
-                sh("echo ${env.GIT_BRANCH}")
-                script {
-                    def gitbranch = sh(
-                        script: 'git rev-parse --abbrev-ref HEAD',
-                        returnStdout: true
-                    ).trim()
-
-                    echo "Branch: ${gitbranch}"
-                }
             }
         }
-        stage('test skipping steps v1') {
-            steps {
-                script{
-                    if (env.GIT_BRANCH == 'origin/main') {
-                        echo 'branch is main'
-                    } else if (env.GIT_BRANCH != 'someBranch') {
-                        echo 'branch is not called someBranch'
-                    }
-                }
-            }
-        }
-        stage('test skipping steps v2') {
+        stage('test skipping steps') {
             when {
                 expression {
                     env.GIT_BRANCH == 'origin/main'
                 }
             }
             steps {
-              echo 'still on branch main'
+              echo 'Main branch detected'
             }
         }
         stage('Generate sha256') {
