@@ -58,7 +58,7 @@ pipeline {
         stage('test skipping steps v1') {
             steps {
                 script{
-                    if (env.GIT_BRANCH == 'main') {
+                    if (env.GIT_BRANCH == 'origin/main') {
                         echo 'branch is main'
                     } else if (env.GIT_BRANCH != 'someBranch') {
                         echo 'branch is not called someBranch'
@@ -68,7 +68,9 @@ pipeline {
         }
         stage('test skipping steps v2') {
             when {
-              env.GIT_BRANCH 'main'
+                expression {
+                    env.GIT_BRANCH == 'origin/main'
+                }
             }
             steps {
               echo 'still on branch main'
