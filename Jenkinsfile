@@ -46,23 +46,23 @@ pipeline {
                 sh(script: "sbt test")
             }
         }
-        stage('test skipping steps') {
+        stage('Generate sha256') {
             when {
                 expression {
                     env.GIT_BRANCH == 'origin/main'
                 }
             }
             steps {
-              echo 'Main branch detected'
-            }
-        }
-        stage('Generate sha256') {
-            steps {
                 unstash(name: 'artefact')
                 sh("openssl dgst -sha256 -binary ${target_file} | openssl enc -base64 > ${env.JOB_BASE_NAME}.zip.base64sha256")
             }
         }
         stage('Upload to s3') {
+            when {
+                expression {
+                    env.GIT_BRANCH == 'origin/main'
+                }
+            }
             steps {
                 sh(
                     """
@@ -77,6 +77,11 @@ pipeline {
             }
         }
         stage('Deploy to Integration') {
+            when {
+                expression {
+                    env.GIT_BRANCH == 'origin/main'
+                }
+            }
             steps {
                 build(
                     job: 'api-platform-admin-api/deploy_lambda_version',
