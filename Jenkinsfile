@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 
 // Assume that the zip artefact has the same name as the Jenkins job
-String target_file = "${env.JOB_BASE_NAME}.zip"
+String target_file = "api-platform-get-apis-lambda.zip"
 
 pipeline {
     agent { label 'docker' }
@@ -15,6 +15,7 @@ pipeline {
     stages {
         stage('Set build details') {
             steps {
+                sh("echo ${env.JOB_BASE_NAME}")
                 script {
                     currentBuild.description = "version - ${ALIAS}"
                 }
