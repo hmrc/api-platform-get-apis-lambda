@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Set build details') {
             steps {
-                sh("echo ${env.JOB_BASE_NAME}")
+                sh("echo ${env.JOB_NAME?.split('/')[1]}")
                 script {
                     currentBuild.description = "version - ${ALIAS}"
                 }
