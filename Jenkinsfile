@@ -1,10 +1,10 @@
 #!/usr/bin/env groovy
 
-// Assume that the zip artefact has the same name as the Jenkins job
-String target_file = "${env.JOB_NAME?.split('/')[1]}.zip"
-
 // Not using the JOB_BASE_NAME env variable as the pr builder name would be incorrect for example PR-30
 String full_job_name = "${env.JOB_NAME?.split('/')[1]}"
+
+// Assume that the zip artefact has the same name as the Jenkins job
+String target_file = "${full_job_name}.zip"
 
 pipeline {
     agent { label 'docker' }
@@ -18,7 +18,7 @@ pipeline {
     stages {
         stage('Set build details') {
             steps {
-                sh("echo ${full_job_name}")
+                sh("echo ${target_file}")
                 script {
                     currentBuild.description = "version - ${ALIAS}"
                 }

@@ -1,7 +1,7 @@
 
 # api-platform-get-apis-lambda
 
-Lambda function to get a list of APIs in AWS API Gateway and return the list as JSON.
+A lambda function to get a list of APIs in AWS API Gateway and return the list as JSON.
 
 ### License
 
