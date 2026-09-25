@@ -1,7 +1,10 @@
 #!/usr/bin/env groovy
 
+// Not using the JOB_BASE_NAME env variable as the pr builder name would be incorrect for example PR-30
+String full_job_name = "${env.JOB_NAME?.split('/')[1]}"
+
 // Assume that the zip artefact has the same name as the Jenkins job
-String target_file = "${env.JOB_BASE_NAME}.zip"
+String target_file = "${full_job_name}.zip"
 
 pipeline {
     agent { label 'docker' }
@@ -15,6 +18,7 @@ pipeline {
     stages {
         stage('Set build details') {
             steps {
+                sh("echo ${target_file}")
                 script {
                     currentBuild.description = "version - ${ALIAS}"
                 }
@@ -54,7 +58,7 @@ pipeline {
             }
             steps {
                 unstash(name: 'artefact')
-                sh("openssl dgst -sha256 -binary ${target_file} | openssl enc -base64 > ${env.JOB_BASE_NAME}.zip.base64sha256")
+                sh("openssl dgst -sha256 -binary ${target_file} | openssl enc -base64 > ${full_job_name}.zip.base64sha256")
             }
         }
         stage('Upload to s3') {
@@ -67,10 +71,10 @@ pipeline {
                 sh(
                     """
                     aws s3 cp ${target_file} \
-                        s3://mdtp-lambda-functions-integration/${env.JOB_BASE_NAME}/${env.JOB_BASE_NAME}_${ALIAS}.zip \
+                        s3://mdtp-lambda-functions-integration/${full_job_name}/${full_job_name}_${ALIAS}.zip \
                         --acl=bucket-owner-full-control --only-show-errors
-                    aws s3 cp ${env.JOB_BASE_NAME}.zip.base64sha256 \
-                        s3://mdtp-lambda-functions-integration/${env.JOB_BASE_NAME}/${env.JOB_BASE_NAME}_${ALIAS}.zip.base64sha256 \
+                    aws s3 cp ${full_job_name}.zip.base64sha256 \
+                        s3://mdtp-lambda-functions-integration/${full_job_name}/${full_job_name}_${ALIAS}.zip.base64sha256 \
                         --content-type text/plain --acl=bucket-owner-full-control --only-show-errors
                     """
                 )
@@ -86,7 +90,7 @@ pipeline {
                 build(
                     job: 'api-platform-admin-api/deploy_lambda_version',
                     parameters: [
-                        [$class: 'StringParameterValue', name: 'ARTEFACT', value: env.JOB_BASE_NAME],
+                        [$class: 'StringParameterValue', name: 'ARTEFACT', value: full_job_name],
                         [$class: 'StringParameterValue', name: 'HASH', value: ALIAS],
                         [$class: 'BooleanParameterValue', name: 'ACTIVATE_INTEGRATION', value: true],
                     ]
