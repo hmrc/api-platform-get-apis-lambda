@@ -19,6 +19,7 @@ pipeline {
         stage('Set build details') {
             steps {
                 sh("echo ${target_file}")
+                sh("echo ${env.GIT_BRANCH}")
                 script {
                     currentBuild.description = "version - ${ALIAS}"
                 }
