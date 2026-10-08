@@ -89,7 +89,7 @@ pipeline {
                 build(
                     job: 'api-platform-admin-api/deploy_lambda_version',
                     parameters: [
-                        [$class: 'StringParameterValue', name: 'ARTEFACT', value: full_job_name],
+                        [$class: 'StringParameterValue', name: 'ARTEFACT', value: ${full_job_name}],
                         [$class: 'StringParameterValue', name: 'HASH', value: ALIAS],
                         [$class: 'BooleanParameterValue', name: 'ACTIVATE_INTEGRATION', value: true],
                     ]
