@@ -18,8 +18,6 @@ pipeline {
     stages {
         stage('Set build details') {
             steps {
-                sh("echo ${target_file}")
-                sh("echo ${env.GIT_BRANCH}")
                 script {
                     currentBuild.description = "version - ${ALIAS}"
                 }
@@ -54,7 +52,7 @@ pipeline {
         stage('Generate sha256') {
             when {
                 expression {
-                    env.GIT_BRANCH == 'origin/main'
+                    env.GIT_BRANCH == 'main'
                 }
             }
             steps {
@@ -65,7 +63,7 @@ pipeline {
         stage('Upload to s3') {
             when {
                 expression {
-                    env.GIT_BRANCH == 'origin/main'
+                    env.GIT_BRANCH == 'main'
                 }
             }
             steps {
@@ -84,7 +82,7 @@ pipeline {
         stage('Deploy to Integration') {
             when {
                 expression {
-                    env.GIT_BRANCH == 'origin/main'
+                    env.GIT_BRANCH == 'main'
                 }
             }
             steps {
